@@ -61,7 +61,21 @@ const PRESS = [
   { pub: "University of Bonn", title: "Two days of oatmeal reduce cholesterol level", desc: "The original press release from the research team. The participants consumed a calorie-reduced diet, consisting almost exclusively of oatmeal, for two days. Even after six weeks, the effect remained stable.", url: "https://www.uni-bonn.de/en/news/017-2026", date: "Feb 2026" },
 ];
 
-
+// Press logo SVGs — muted grey, colour on hover
+const PRESS_LOGOS = [
+  { name: "Newsweek", url: "https://www.newsweek.com/scientists-reveal-two-day-diet-slashes-cholesterol-weeks-bacteria-oatmeal-11418144",
+    svg: `<svg viewBox="0 0 120 28" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><text x="0" y="22" font-family="Georgia, serif" font-size="22" font-weight="700" letter-spacing="-0.5">Newsweek</text></svg>` },
+  { name: "US News", url: "https://www.usnews.com/news/health-news/articles/2026-03-04/two-days-of-oatmeal-may-lower-cholesterol-study-finds",
+    svg: `<svg viewBox="0 0 110 28" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><text x="0" y="20" font-family="Arial, sans-serif" font-size="13" font-weight="700" letter-spacing="0.5" text-transform="uppercase">U.S. NEWS</text><text x="0" y="28" font-family="Arial, sans-serif" font-size="9" font-weight="400" letter-spacing="1.5">&amp; WORLD REPORT</text></svg>` },
+  { name: "ScienceAlert", url: "https://www.sciencealert.com/48-hour-oatmeal-diet-could-cut-cholesterol-levels-for-weeks-study-shows",
+    svg: `<svg viewBox="0 0 130 28" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><text x="0" y="22" font-family="Arial, sans-serif" font-size="18" font-weight="800" letter-spacing="-0.3">ScienceAlert</text></svg>` },
+  { name: "SciTechDaily", url: "https://scitechdaily.com/this-simple-48-hour-diet-cut-harmful-cholesterol-by-10-study-finds/",
+    svg: `<svg viewBox="0 0 120 28" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><text x="0" y="22" font-family="Arial, sans-serif" font-size="18" font-weight="700">SciTechDaily</text></svg>` },
+  { name: "The Healthy", url: "https://www.thehealthy.com/news/oatmeal-cholesterol-gut-health-university-of-bonn-study-2026/",
+    svg: `<svg viewBox="0 0 110 28" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><text x="0" y="22" font-family="Georgia, serif" font-size="20" font-weight="700" font-style="italic">The Healthy</text></svg>` },
+  { name: "ScienceDaily", url: "https://www.sciencedaily.com/releases/2026/02/260225081217.htm",
+    svg: `<svg viewBox="0 0 120 28" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><text x="0" y="22" font-family="Arial, sans-serif" font-size="18" font-weight="700">ScienceDaily</text></svg>` },
+];
 
 const getRecipe = (id) => RECIPES.find((r) => r.id === id);
 const dietLabel = (d) => ({ vegan: "Vegan", vegetarian: "Vegetarian", fish: "Contains fish", meat: "Contains meat" }[d] || "");
@@ -185,7 +199,29 @@ export default function App() {
 .hero-evidence a { color: #999; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: #ddd; }
 .hero-evidence a:hover { color: #1A1A1A; text-decoration-color: #1A1A1A; }
 
-
+/* ══ PRESS LOGO STRIP ══ */
+.press-strip {
+  border-top: 1px solid #EEEAE2;
+  border-bottom: 1px solid #EEEAE2;
+  padding: 24px;
+  text-align: center;
+  background: #FAFAF7;
+}
+.press-strip-label {
+  font-family: 'Outfit', sans-serif; font-size: 10px; font-weight: 600;
+  letter-spacing: 2.5px; text-transform: uppercase; color: #ccc; margin-bottom: 20px;
+}
+.press-logo-row {
+  display: flex; align-items: center; justify-content: center;
+  gap: 36px; flex-wrap: wrap;
+}
+.press-logo-link {
+  display: flex; align-items: center;
+  color: #ccc; transition: color 0.15s; text-decoration: none;
+  height: 28px;
+}
+.press-logo-link:hover { color: #888; }
+.press-logo-link svg { height: 22px; width: auto; display: block; }
 
 /* ══ SECTIONS ══ */
 .sec { padding: 64px 0; border-top: 1px solid #E8E3DA; }
@@ -365,7 +401,20 @@ export default function App() {
         <p className="hero-trio-context">Average results from the 2026 University of Bonn clinical trial, in which participants ate almost exclusively oatmeal for 48 hours. Effects were still recorded six weeks later.</p>
 
         <button className="hero-cta" onClick={() => scrollTo(plannerRef)}>Start the reset</button>
+        <p className="hero-evidence">Based on a <a href="https://www.nature.com/articles/s41467-026-68303-9" target="_blank" rel="noopener noreferrer">2026 University of Bonn trial</a> and supported by <a href="https://pubmed.ncbi.nlm.nih.gov/27724985/" target="_blank" rel="noopener noreferrer">58+ randomised controlled trials</a>. Health claims approved by the <a href="https://www.ecfr.gov/current/title-21/chapter-I/subchapter-B/part-101/subpart-E/section-101.81" target="_blank" rel="noopener noreferrer">US FDA</a>, <a href="https://efsa.onlinelibrary.wiley.com/doi/10.2903/j.efsa.2010.1885" target="_blank" rel="noopener noreferrer">EFSA</a>, and FSANZ.</p>
+      </div>
 
+      {/* ═══ PRESS LOGO STRIP ═══ */}
+      <div className="press-strip">
+        <div className="press-strip-label">As seen in</div>
+        <div className="press-logo-row">
+          {PRESS_LOGOS.map((logo) => (
+            <a key={logo.name} href={logo.url} target="_blank" rel="noopener noreferrer" className="press-logo-link" title={logo.name}>
+              <svg viewBox={logo.svg.match(/viewBox="([^"]+)"/)[1]} fill="currentColor" xmlns="http://www.w3.org/2000/svg" dangerouslySetInnerHTML={{ __html: logo.svg.replace(/<svg[^>]+>/, '').replace('</svg>', '') }} />
+            </a>
+          ))}
+        </div>
+      </div>
 
       <div className="wrap">
 
@@ -495,6 +544,7 @@ export default function App() {
         {/* ═══ IN THE PRESS ═══ */}
         <div className="sec">
           <div className="sec-label">In the press</div>
+          <h2 className="sec-title">What they said</h2>
           <div style={{ marginTop: 8 }}>
             {PRESS.map((item, i) => (
               <div key={i} className="press-item">
