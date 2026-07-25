@@ -1,4 +1,5 @@
 import { useState, useRef, useMemo } from "react";
+import { Analytics } from "@vercel/analytics/react";
 
 const RECIPES = [
   { id: 1, name: "Cinnamon Banana Porridge", type: "sweet", diet: "vegan", r: "1:3", w: 300, f: [10, 5, 3], m: "100g oats in 300ml water. Top with half a sliced banana, generous cinnamon, pinch of nutmeg.", t: "Mash the banana into the hot oats for a creamier texture.", i: [{ n: "banana", c: "fruit" }, { n: "cinnamon", c: "pantry" }, { n: "nutmeg", c: "pantry" }] },
@@ -602,6 +603,7 @@ export default function App() {
         <p>The 48-Hour Oat Reset is a free resource. No products, no sponsors.</p>
         <p style={{ opacity: 0.5 }}>This is not medical advice. Talk to your doctor before making dietary changes.</p>
       </div>
+      <Analytics />
     </div>
   );
 }
