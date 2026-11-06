@@ -1,1 +1,5 @@
-{ "buildCommand": "npm run build" }
+{
+  "framework": null,
+  "buildCommand": "npm run build",
+  "outputDirectory": "build"
+}
