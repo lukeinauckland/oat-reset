@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://oatreset.com/sitemap.xml
+Sitemap: https://www.oatreset.com/sitemap.xml
