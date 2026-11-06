@@ -1,6 +1,6 @@
 import { useState, useRef, useMemo, useEffect } from "react";
 
-const RECIPES = [
+export const RECIPES = [
   { id: 1, name: "Cinnamon Banana Porridge", type: "sweet", diet: "vegan", r: "1:3", w: 300, f: [10, 5, 3], m: "100g oats in 300ml water. Top with half a sliced banana, generous cinnamon, pinch of nutmeg.", t: "Mash the banana into the hot oats for a creamier texture.", i: [{ n: "banana", c: "fruit" }, { n: "cinnamon", c: "pantry" }, { n: "nutmeg", c: "pantry" }] },
   { id: 2, name: "Chocolate Porridge", type: "sweet", diet: "vegan", r: "1:3", w: 300, f: [9, 4, 5], m: "100g oats in 300ml water. Stir through a tablespoon of raw cacao powder and half a mashed banana.", t: "Tastes like dessert. Best deployed as a day-two morale booster.", i: [{ n: "raw cacao powder", c: "pantry" }, { n: "banana", c: "fruit" }] },
   { id: 3, name: "Apple Pie Porridge", type: "sweet", diet: "vegan", r: "1:3", w: 300, f: [7, 5, 8], m: "Grate one small apple into 300ml simmering water. Add 100g oats, cinnamon, a pinch of ground ginger, scrape of vanilla paste. Cook until the apple breaks down.", t: "Use a tart apple (Granny Smith) to cut through the sweetness.", i: [{ n: "apple", c: "fruit" }, { n: "cinnamon", c: "pantry" }, { n: "ground ginger", c: "pantry" }, { n: "vanilla paste", c: "pantry" }] },
@@ -65,10 +65,12 @@ const getRecipe = (id) => RECIPES.find((r) => r.id === id);
 
 // Recipes that match the trial: oats in water plus fruit or veg, no salt, sugar or sweeteners
 const AS_STUDIED = new Set([1, 4, 5, 6, 7, 8]);
-const isStudied = (r) => AS_STUDIED.has(r.id);
+export const isStudied = (r) => AS_STUDIED.has(r.id);
 
 // For adapted vegan savoury recipes: how to make them closer to the trial
-function puristNote(r) {
+export const recipeSlug = (r) => r.name.toLowerCase().replace(/&/g, "and").replace(/'/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+
+export function puristNote(r) {
   if (r.type !== "savoury" || r.diet !== "vegan") return null;
   const names = r.i.map((x) => x.n);
   const drop = [];
@@ -78,7 +80,7 @@ function puristNote(r) {
   if (!drop.length) return null;
   return `Purist version: leave out ${drop.join(" and ")} and the salt.`;
 }
-const dietLabel = (d) => ({ vegan: "Vegan", vegetarian: "Vegetarian", fish: "Contains fish", meat: "Contains meat" }[d] || "");
+export const dietLabel = (d) => ({ vegan: "Vegan", vegetarian: "Vegetarian", fish: "Contains fish", meat: "Contains meat" }[d] || "");
 
 const SLOT_NAMES = ["Breakfast", "Lunch", "Dinner", "Breakfast", "Lunch", "Dinner"];
 const SLOT_FIT = [0, 1, 2, 0, 1, 2];
@@ -185,7 +187,6 @@ export default function App() {
   return (
     <div style={{ fontFamily: "'Source Serif 4', Georgia, serif", background: "#FAFAF7", color: "#1A1A1A", minHeight: "100vh" }}>
       <style dangerouslySetInnerHTML={{ __html: `
-@import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,300;8..60,400;8..60,600;8..60,700;8..60,800&family=Outfit:wght@300;400;500;600;700&display=swap');
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 ::selection { background: rgba(212, 160, 23, 0.15); }
 .wrap { max-width: 700px; margin: 0 auto; padding: 0 24px; }
@@ -407,6 +408,8 @@ export default function App() {
 }
 
 .faq-a[hidden] { display: none; }
+.rcard-link { display: inline-block; font-family: 'Outfit', sans-serif; font-size: 11px; color: #aaa; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: #ddd; margin-bottom: 10px; }
+.rcard-link:hover { color: #1A1A1A; }
 /* == ADDED: badges, notes, plan actions, print == */
 .rcard-badge { display: inline-block; margin-left: 8px; padding: 2px 7px; border: 1px solid #E0DBD1; border-radius: 10px; color: #aaa; font-size: 9px; letter-spacing: 1px; text-transform: uppercase; }
 .rcard-badge.studied { border-color: #D4A017; color: #B8890F; }
@@ -462,7 +465,7 @@ export default function App() {
         </div>
 
         {/* == PLANNER == */}
-        <div className="sec" ref={plannerRef}>
+        <div className="sec" id="planner" ref={plannerRef}>
           <div className="sec-label">Meal planner</div>
           <h2 className="sec-title">Pick any 6</h2>
           <p className="planner-meta">25 tasty one pot recipes. Under 10 minutes each. Choose 6 and we'll make your plan with recipes.</p>
@@ -490,6 +493,7 @@ export default function App() {
                   <div className="rcard-name">{r.name}</div>
                   <div className="rcard-ingredients">{ingredientNames}</div>
                   <div className="rcard-tip">{r.t}</div>
+                  <a className="rcard-link" href={`/recipes/${recipeSlug(r)}/`} onClick={(e) => e.stopPropagation()}>Full recipe &#8594;</a>
                   <div className="rcard-diet">{dietLabel(r.diet)}<span className={`rcard-badge ${isStudied(r) ? "studied" : ""}`}>{isStudied(r) ? "As studied" : "Adapted"}</span></div>
                 </div>
               );
@@ -641,7 +645,8 @@ export default function App() {
 
       {/* == FOOTER == */}
       <div className="footer">
-        <p>The 48-Hour Oat Reset is a free resource. No products, no sponsors.</p>
+        <p>The 48-Hour Oat Reset is a free resource. No products, no sponsors. <a href="/recipes/" style={{ color: "#999" }}>All 25 recipes</a></p>
+        <p>Last updated November 2026.</p>
         <p style={{ opacity: 0.5 }}>This is not medical advice. Talk to your doctor before making dietary changes.</p>
       </div>
     </div>
