@@ -1,4 +1,4 @@
-import { useState, useRef, useMemo } from "react";
+import { useState, useRef, useMemo, useEffect } from "react";
 
 const RECIPES = [
   { id: 1, name: "Cinnamon Banana Porridge", type: "sweet", diet: "vegan", r: "1:3", w: 300, f: [10, 5, 3], m: "100g oats in 300ml water. Top with half a sliced banana, generous cinnamon, pinch of nutmeg.", t: "Mash the banana into the hot oats for a creamier texture.", i: [{ n: "banana", c: "fruit" }, { n: "cinnamon", c: "pantry" }, { n: "nutmeg", c: "pantry" }] },
@@ -28,13 +28,13 @@ const RECIPES = [
   { id: 25, name: "Chorizo & Roasted Capsicum", type: "savoury", diet: "meat", r: "1:2", w: 200, f: [1, 3, 10], m: "Dry-fry 2-3 thin slices of chorizo until crisp (no oil needed). Remove and drain. Cook 100g oats in 200ml water with smoked paprika. Top with crisp chorizo and roasted capsicum.", t: "Minimum chorizo. Two or three thin slices is enough for flavour.", i: [{ n: "chorizo", c: "protein" }, { n: "roasted capsicum (jarred)", c: "pantry" }, { n: "smoked paprika", c: "pantry" }] },
 ];
 
-const FAQ = [
-  { q: "Is a 10% LDL reduction actually meaningful?", a: "Yes. Every 1 mmol/L reduction in LDL correlates with a 20-25% reduction in cardiovascular events. A 10% drop from 48 hours is comparable to what most people achieve through an entire lifestyle overhaul." },
+export const FAQ = [
+  { q: "Is a 10% LDL reduction actually meaningful?", a: "LDL is the cholesterol number doctors care most about, and lower is better. The researchers called a 10% drop substantial, while noting it is not in the same league as modern medication. Whether repeating the reset keeps LDL down for good has not been tested yet." },
   { q: "Will I be miserable for two days?", a: "That's the point of the meal planner. You're eating chocolate porridge, mushroom risotto, miso and tomato oats. The recipes are designed to make the 48 hours genuinely enjoyable." },
-  { q: "Can I add things to the oats?", a: "Small amounts of fruit, vegetables, herbs, spices, stock cubes, and miso paste are all fine. Avoid butter, oil, coconut cream, sugar, milk, and processed toppings." },
-  { q: "What about meat or fish?", a: "The study was oats-only, but a very small amount of lean protein as a flavour accent keeps the oats as the base while making things more sustainable. Keep portions minimal." },
+  { q: "Can I add things to the oats?", a: "In the trial, people added small amounts of fruit or vegetables and nothing else: no salt, sugar or sweeteners. Recipes marked As studied stick to that. The Adapted ones add a little seasoning, such as a stock cube or miso, to make two days bearable. Either way, avoid butter, oil, coconut cream, sugar, milk and processed toppings." },
+  { q: "What about meat or fish?", a: "The trial used no meat or fish. A few recipes use a very small amount as a flavour accent, which keeps the oats as the base. If you want to match the study exactly, skip them." },
   { q: "Should I do this instead of taking statins?", a: "No. This is not a substitute for prescribed medication. Statins can reduce LDL by 50% or more. The oat reset is a complementary intervention. Always talk to your doctor." },
-  { q: "How often should I do it?", a: "The researchers suggested every six weeks could maintain the benefits, though this hasn't been confirmed in follow-up trials yet. We'll send you a reminder at 5.5 weeks if you sign up." },
+  { q: "How often should I do it?", a: "The researchers want to test whether repeating the reset every six weeks keeps the benefit going. That has not been confirmed yet, so for now it is a sensible guess rather than a proven schedule." },
   { q: "I'm vegan but my cholesterol is high. How?", a: "Being vegan doesn't automatically mean low cholesterol. Coconut oil, palm oil in processed foods, and refined carbohydrates can all push LDL up. This could be a useful tool alongside cleaning up your overall diet." },
   { q: "What can I drink during the reset?", a: "Skip anything with calories: no soft drinks, juice, alcohol, or milk. Black coffee and plain teas are both fine and come with their own well-documented health benefits. Herbal teas, green tea, and plain sparkling water all work too. And, of course, water." },
   { q: "Is this safe?", a: "For most people, two days of oats is completely safe. If you have coeliac disease, a diagnosed eating disorder, diabetes, or any condition requiring careful dietary management, speak to your doctor first." },
@@ -61,23 +61,23 @@ const PRESS = [
   { pub: "University of Bonn", title: "Two days of oatmeal reduce cholesterol level", desc: "The original press release from the research team. The participants consumed a calorie-reduced diet, consisting almost exclusively of oatmeal, for two days. Even after six weeks, the effect remained stable.", url: "https://www.uni-bonn.de/en/news/017-2026", date: "Feb 2026" },
 ];
 
-// Press logo SVGs — muted grey, colour on hover
-const PRESS_LOGOS = [
-  { name: "Newsweek", url: "https://www.newsweek.com/scientists-reveal-two-day-diet-slashes-cholesterol-weeks-bacteria-oatmeal-11418144",
-    svg: `<svg viewBox="0 0 120 28" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><text x="0" y="22" font-family="Georgia, serif" font-size="22" font-weight="700" letter-spacing="-0.5">Newsweek</text></svg>` },
-  { name: "US News", url: "https://www.usnews.com/news/health-news/articles/2026-03-04/two-days-of-oatmeal-may-lower-cholesterol-study-finds",
-    svg: `<svg viewBox="0 0 110 28" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><text x="0" y="20" font-family="Arial, sans-serif" font-size="13" font-weight="700" letter-spacing="0.5" text-transform="uppercase">U.S. NEWS</text><text x="0" y="28" font-family="Arial, sans-serif" font-size="9" font-weight="400" letter-spacing="1.5">&amp; WORLD REPORT</text></svg>` },
-  { name: "ScienceAlert", url: "https://www.sciencealert.com/48-hour-oatmeal-diet-could-cut-cholesterol-levels-for-weeks-study-shows",
-    svg: `<svg viewBox="0 0 130 28" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><text x="0" y="22" font-family="Arial, sans-serif" font-size="18" font-weight="800" letter-spacing="-0.3">ScienceAlert</text></svg>` },
-  { name: "SciTechDaily", url: "https://scitechdaily.com/this-simple-48-hour-diet-cut-harmful-cholesterol-by-10-study-finds/",
-    svg: `<svg viewBox="0 0 120 28" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><text x="0" y="22" font-family="Arial, sans-serif" font-size="18" font-weight="700">SciTechDaily</text></svg>` },
-  { name: "The Healthy", url: "https://www.thehealthy.com/news/oatmeal-cholesterol-gut-health-university-of-bonn-study-2026/",
-    svg: `<svg viewBox="0 0 110 28" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><text x="0" y="22" font-family="Georgia, serif" font-size="20" font-weight="700" font-style="italic">The Healthy</text></svg>` },
-  { name: "ScienceDaily", url: "https://www.sciencedaily.com/releases/2026/02/260225081217.htm",
-    svg: `<svg viewBox="0 0 120 28" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><text x="0" y="22" font-family="Arial, sans-serif" font-size="18" font-weight="700">ScienceDaily</text></svg>` },
-];
-
 const getRecipe = (id) => RECIPES.find((r) => r.id === id);
+
+// Recipes that match the trial: oats in water plus fruit or veg, no salt, sugar or sweeteners
+const AS_STUDIED = new Set([1, 4, 5, 6, 7, 8]);
+const isStudied = (r) => AS_STUDIED.has(r.id);
+
+// For adapted vegan savoury recipes: how to make them closer to the trial
+function puristNote(r) {
+  if (r.type !== "savoury" || r.diet !== "vegan") return null;
+  const names = r.i.map((x) => x.n);
+  const drop = [];
+  if (names.some((n) => n.includes("stock cube"))) drop.push("the stock cube");
+  if (names.some((n) => n.includes("miso"))) drop.push("the miso");
+  if (names.some((n) => n.includes("soy sauce"))) drop.push("the soy sauce");
+  if (!drop.length) return null;
+  return `Purist version: leave out ${drop.join(" and ")} and the salt.`;
+}
 const dietLabel = (d) => ({ vegan: "Vegan", vegetarian: "Vegetarian", fish: "Contains fish", meat: "Contains meat" }[d] || "");
 
 const SLOT_NAMES = ["Breakfast", "Lunch", "Dinner", "Breakfast", "Lunch", "Dinner"];
@@ -131,6 +131,7 @@ export default function App() {
   const [df, setDf] = useState("all");
   const [showPlan, setShowPlan] = useState(false);
   const [faqOpen, setFaqOpen] = useState(null);
+  const [shareMsg, setShareMsg] = useState("");
   const plannerRef = useRef(null);
   const planRef = useRef(null);
 
@@ -148,19 +149,48 @@ export default function App() {
       return prev;
     });
     setShowPlan(false);
+    setShareMsg("");
+  };
+
+  // Load a shared plan from the URL, e.g. /?plan=1-4-11-12-19-22
+  useEffect(() => {
+    const raw = new URLSearchParams(window.location.search).get("plan");
+    if (!raw) return;
+    const ids = [...new Set(raw.split("-").map((x) => parseInt(x, 10)))].filter((id) => getRecipe(id));
+    if (ids.length === 6) {
+      setSel(ids);
+      setShowPlan(true);
+      setTimeout(() => planRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 300);
+    }
+  }, []);
+
+  const sharePlan = async () => {
+    const url = `${window.location.origin}/?plan=${sel.join("-")}`;
+    const text = "I'm doing the 48-Hour Oat Reset. Here's my plan:";
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: "My 48-Hour Oat Reset", text, url });
+        return;
+      }
+      await navigator.clipboard.writeText(url);
+      setShareMsg("Link copied");
+    } catch (e) {
+      if (e && e.name === "AbortError") return;
+      setShareMsg(url);
+    }
   };
 
   const scrollTo = (ref) => setTimeout(() => ref.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 100);
 
   return (
     <div style={{ fontFamily: "'Source Serif 4', Georgia, serif", background: "#FAFAF7", color: "#1A1A1A", minHeight: "100vh" }}>
-      <style>{`
+      <style dangerouslySetInnerHTML={{ __html: `
 @import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,300;8..60,400;8..60,600;8..60,700;8..60,800&family=Outfit:wght@300;400;500;600;700&display=swap');
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 ::selection { background: rgba(212, 160, 23, 0.15); }
 .wrap { max-width: 700px; margin: 0 auto; padding: 0 24px; }
 
-/* ══ HERO ══ */
+/* == HERO == */
 .hero { padding: 72px 24px 56px; max-width: 700px; margin: 0 auto; text-align: center; }
 .hero-brand {
   font-family: 'Outfit', sans-serif;
@@ -199,7 +229,7 @@ export default function App() {
 .hero-evidence a { color: #999; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: #ddd; }
 .hero-evidence a:hover { color: #1A1A1A; text-decoration-color: #1A1A1A; }
 
-/* ══ PRESS LOGO STRIP ══ */
+/* == PRESS LOGO STRIP == */
 .press-strip {
   border-top: 1px solid #EEEAE2;
   border-bottom: 1px solid #EEEAE2;
@@ -223,7 +253,7 @@ export default function App() {
 .press-logo-link:hover { color: #888; }
 .press-logo-link svg { height: 22px; width: auto; display: block; }
 
-/* ══ SECTIONS ══ */
+/* == SECTIONS == */
 .sec { padding: 64px 0; border-top: 1px solid #E8E3DA; }
 .sec-label {
   font-family: 'Outfit', sans-serif; font-size: 15px; font-weight: 700;
@@ -234,7 +264,7 @@ export default function App() {
 .sec-body a { color: #777; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: #ccc; }
 .sec-body a:hover { color: #1A1A1A; text-decoration-color: #1A1A1A; }
 
-/* ══ FILTERS ══ */
+/* == FILTERS == */
 .filters { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
 .fbtn {
   font-family: 'Outfit', sans-serif; font-size: 12px; font-weight: 500;
@@ -251,7 +281,7 @@ export default function App() {
   margin-bottom: 24px; line-height: 1.6;
 }
 
-/* ══ RECIPE GRID ══ */
+/* == RECIPE GRID == */
 .rgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .rcard {
   background: #FFFFFF; border: 1px solid #DDD8CE; border-radius: 8px;
@@ -276,7 +306,7 @@ export default function App() {
 .rcard-tip { font-family: 'Outfit', sans-serif; font-size: 12px; line-height: 1.5; color: #999; margin-bottom: 10px; font-style: italic; }
 .rcard-diet { font-family: 'Outfit', sans-serif; font-size: 10px; font-weight: 500; letter-spacing: 0.5px; color: #ccc; }
 
-/* ══ STICKY BAR ══ */
+/* == STICKY BAR == */
 .sbar { position: sticky; bottom: 0; z-index: 10; background: linear-gradient(to top, #FAFAF7 50%, transparent); padding: 24px 0 32px; text-align: center; }
 .sbar-btn {
   font-family: 'Outfit', sans-serif; background: #1A1A1A; color: #FAFAF7;
@@ -286,7 +316,7 @@ export default function App() {
 .sbar-btn:hover { background: #333; }
 .sbar-btn:disabled { opacity: 0.2; cursor: default; box-shadow: none; }
 
-/* ══ PLAN OUTPUT ══ */
+/* == PLAN OUTPUT == */
 .plan-wrapper { border: 1px solid #E0DBD2; border-radius: 8px; overflow: hidden; margin: 32px 0 48px; }
 .plan-day-header { background: #1A1A1A; padding: 14px 28px; display: flex; align-items: baseline; gap: 12px; }
 .plan-day-name { font-size: 17px; font-weight: 700; color: #FAFAF7; letter-spacing: -0.2px; }
@@ -305,7 +335,7 @@ export default function App() {
 .plan-tip { font-family: 'Outfit', sans-serif; font-size: 12px; color: #999; margin-top: 6px; font-style: italic; }
 .plan-day-divider { height: 1px; background: #E8E3DA; }
 
-/* ══ SHOPPING ══ */
+/* == SHOPPING == */
 .shop { background: #FAFAF7; border: 1px solid #E0DBD2; border-radius: 8px; padding: 32px 36px; margin: 0 0 48px; }
 .shop-title { font-size: 20px; font-weight: 700; color: #1A1A1A; margin-bottom: 4px; }
 .shop-subtitle { font-family: 'Outfit', sans-serif; font-size: 13px; color: #aaa; margin-bottom: 28px; }
@@ -318,12 +348,12 @@ export default function App() {
 .shop-item.hl { color: #C49A2A; font-weight: 600; }
 .shop-item.hl::before { background: #D4A017; }
 
-/* ══ EVIDENCE ══ */
+/* == EVIDENCE == */
 .ev-row { display: flex; gap: 40px; margin: 32px 0; flex-wrap: wrap; }
 .ev-num { font-size: 36px; font-weight: 700; color: #1A1A1A; line-height: 1; letter-spacing: -1px; }
 .ev-label { font-family: 'Outfit', sans-serif; font-size: 11px; color: #999; margin-top: 4px; }
 
-/* ══ PRESS ARTICLES ══ */
+/* == PRESS ARTICLES == */
 .press-item { padding: 20px 0; border-bottom: 1px solid #F0ECE4; }
 .press-item:last-child { border-bottom: none; }
 .press-item-pub {
@@ -337,7 +367,7 @@ export default function App() {
 .press-item-link { font-family: 'Outfit', sans-serif; font-size: 12px; color: #999; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: #ddd; }
 .press-item-link:hover { color: #1A1A1A; text-decoration-color: #1A1A1A; }
 
-/* ══ FAQ ══ */
+/* == FAQ == */
 .faq-item { border-bottom: 1px solid #E8E3DA; }
 .faq-q { font-family: 'Outfit', sans-serif; font-size: 15px; font-weight: 500; color: #1A1A1A; padding: 20px 0; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 20px; background: none; border: none; width: 100%; text-align: left; }
 .faq-q:hover { color: #555; }
@@ -345,7 +375,7 @@ export default function App() {
 .faq-arrow.open { transform: rotate(45deg); }
 .faq-a { font-family: 'Outfit', sans-serif; font-size: 14px; line-height: 1.75; color: #666; padding: 0 0 20px; }
 
-/* ══ STUDIES ══ */
+/* == STUDIES == */
 .study-item { padding: 16px 0; border-bottom: 1px solid #F0ECE4; }
 .study-item:last-child { border-bottom: none; }
 .study-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 4px; flex-wrap: wrap; }
@@ -356,13 +386,13 @@ export default function App() {
 .study-link { font-family: 'Outfit', sans-serif; font-size: 12px; color: #999; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: #ddd; }
 .study-link:hover { color: #1A1A1A; text-decoration-color: #1A1A1A; }
 
-/* ══ FOOTER ══ */
+/* == FOOTER == */
 .footer { text-align: center; padding: 56px 24px; border-top: 1px solid #E8E3DA; }
 .footer p { font-family: 'Outfit', sans-serif; font-size: 12px; color: #bbb; line-height: 1.65; margin-bottom: 6px; }
 .reset-btn { font-family: 'Outfit', sans-serif; font-size: 12px; font-weight: 500; color: #999; background: none; border: 1px solid #D5D0C6; border-radius: 4px; padding: 8px 20px; cursor: pointer; transition: all 0.12s; }
 .reset-btn:hover { border-color: #1A1A1A; color: #1A1A1A; }
 
-/* ══ RESPONSIVE ══ */
+/* == RESPONSIVE == */
 @media (max-width: 600px) {
   .rgrid, .shop-grid { grid-template-columns: 1fr; }
   .hero-trio { gap: 24px; }
@@ -375,9 +405,26 @@ export default function App() {
   .plan-slot { padding-top: 0; }
   .press-logo-row { gap: 24px; }
 }
-      `}</style>
 
-      {/* ═══ HERO ═══ */}
+.faq-a[hidden] { display: none; }
+/* == ADDED: badges, notes, plan actions, print == */
+.rcard-badge { display: inline-block; margin-left: 8px; padding: 2px 7px; border: 1px solid #E0DBD1; border-radius: 10px; color: #aaa; font-size: 9px; letter-spacing: 1px; text-transform: uppercase; }
+.rcard-badge.studied { border-color: #D4A017; color: #B8890F; }
+.planner-note { font-family: 'Outfit', sans-serif; font-size: 13px; line-height: 1.6; color: #888; margin: -8px 0 24px; max-width: 560px; }
+.planner-note strong { color: #B8890F; font-weight: 600; }
+.plan-purist { font-family: 'Outfit', sans-serif; font-size: 12px; color: #B8890F; margin-top: 6px; }
+.plan-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+.plan-btn { font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 600; color: #FAFAF7; background: #1A1A1A; border: none; border-radius: 4px; padding: 10px 20px; cursor: pointer; }
+.plan-btn:hover { background: #333; }
+.share-msg { font-family: 'Outfit', sans-serif; font-size: 12px; color: #888; margin-top: 10px; word-break: break-all; }
+@media print {
+  .hero, .press-strip, .sec:not(.plan-sec), .footer, .sbar, .plan-actions, .share-msg { display: none !important; }
+  .plan-sec { border-top: none; padding-top: 0; }
+  .plan-meal, .shop-cat { break-inside: avoid; }
+}
+      ` }} />
+
+      {/* == HERO == */}
       <div className="hero">
         <span className="hero-brand">48HR Oat Reset</span>
         <h1>Lower your cholesterol<br />in <em>48 hours</em></h1>
@@ -398,27 +445,15 @@ export default function App() {
           </div>
         </div>
 
-        <p className="hero-trio-context">Average results from the 2026 University of Bonn clinical trial, in which participants ate almost exclusively oatmeal for 48 hours. Effects were still recorded six weeks later.</p>
+        <p className="hero-trio-context">Average results from the 2026 University of Bonn clinical trial, in which adults with metabolic syndrome ate almost exclusively oatmeal for 48 hours. Effects were still recorded six weeks later.</p>
 
         <button className="hero-cta" onClick={() => scrollTo(plannerRef)}>Start the reset</button>
         <p className="hero-evidence">Based on a <a href="https://www.nature.com/articles/s41467-026-68303-9" target="_blank" rel="noopener noreferrer">2026 University of Bonn trial</a> and supported by <a href="https://pubmed.ncbi.nlm.nih.gov/27724985/" target="_blank" rel="noopener noreferrer">58+ randomised controlled trials</a>. Health claims approved by the <a href="https://www.ecfr.gov/current/title-21/chapter-I/subchapter-B/part-101/subpart-E/section-101.81" target="_blank" rel="noopener noreferrer">US FDA</a>, <a href="https://efsa.onlinelibrary.wiley.com/doi/10.2903/j.efsa.2010.1885" target="_blank" rel="noopener noreferrer">EFSA</a>, and FSANZ.</p>
       </div>
 
-      {/* ═══ PRESS LOGO STRIP ═══ */}
-      <div className="press-strip">
-        <div className="press-strip-label">As seen in</div>
-        <div className="press-logo-row">
-          {PRESS_LOGOS.map((logo) => (
-            <a key={logo.name} href={logo.url} target="_blank" rel="noopener noreferrer" className="press-logo-link" title={logo.name}>
-              <svg viewBox={logo.svg.match(/viewBox="([^"]+)"/)[1]} fill="currentColor" xmlns="http://www.w3.org/2000/svg" dangerouslySetInnerHTML={{ __html: logo.svg.replace(/<svg[^>]+>/, '').replace('</svg>', '') }} />
-            </a>
-          ))}
-        </div>
-      </div>
-
       <div className="wrap">
 
-        {/* ═══ OATS FOR DINNER ═══ */}
+        {/* == OATS FOR DINNER == */}
         <div className="sec">
           <div className="sec-label">Oats for dinner?</div>
           <h2 className="sec-title">Yeah - savoury oats are a thing</h2>
@@ -426,11 +461,12 @@ export default function App() {
           <p className="sec-body">The recipes here are designed for the reset: maximum flavour, minimal fat, sugar, and cholesterol. They work as everyday meals too. Outside the reset, add feta, olive oil, a poached egg, whatever you like. For the 48 hours, they are kept clean so the oats can do their job.</p>
         </div>
 
-        {/* ═══ PLANNER ═══ */}
+        {/* == PLANNER == */}
         <div className="sec" ref={plannerRef}>
           <div className="sec-label">Meal planner</div>
           <h2 className="sec-title">Pick any 6</h2>
           <p className="planner-meta">25 tasty one pot recipes. Under 10 minutes each. Choose 6 and we'll make your plan with recipes.</p>
+          <p className="planner-note">The trial used oats cooked in water with a little fruit or veg, and nothing else. Recipes marked <strong>As studied</strong> stick to that. The rest add small amounts of seasoning to make two days bearable. We think that is a fair trade, but it has not been tested.</p>
 
           <div className="filters">
             <button className={`fbtn ${tf === "all" ? "on" : ""}`} onClick={() => setTf("all")}>All</button>
@@ -454,7 +490,7 @@ export default function App() {
                   <div className="rcard-name">{r.name}</div>
                   <div className="rcard-ingredients">{ingredientNames}</div>
                   <div className="rcard-tip">{r.t}</div>
-                  <div className="rcard-diet">{dietLabel(r.diet)}</div>
+                  <div className="rcard-diet">{dietLabel(r.diet)}<span className={`rcard-badge ${isStudied(r) ? "studied" : ""}`}>{isStudied(r) ? "As studied" : "Adapted"}</span></div>
                 </div>
               );
             })}
@@ -469,9 +505,9 @@ export default function App() {
           )}
         </div>
 
-        {/* ═══ PLAN ═══ */}
+        {/* == PLAN == */}
         {validPlan && (
-          <div className="sec" ref={planRef}>
+          <div className="sec plan-sec" ref={planRef}>
             <div className="sec-label">Your plan</div>
             <h2 className="sec-title">Your 48-Hour Reset</h2>
 
@@ -494,6 +530,7 @@ export default function App() {
                         </div>
                         <p>{s.meal.m}</p>
                         <div className="plan-tip">{s.meal.t}</div>
+                        {puristNote(s.meal) && <div className="plan-purist">{puristNote(s.meal)}</div>}
                       </div>
                     </div>
                   ))}
@@ -521,16 +558,21 @@ export default function App() {
             </div>
 
             <div style={{ textAlign: "center", marginTop: 8 }}>
-              <button className="reset-btn" onClick={() => { setShowPlan(false); setSel([]); scrollTo(plannerRef); }}>Start over</button>
+              <div className="plan-actions">
+                <button className="plan-btn" onClick={() => window.print()}>Print or save as PDF</button>
+                <button className="plan-btn" onClick={sharePlan}>Share my plan</button>
+                <button className="reset-btn" onClick={() => { setShowPlan(false); setSel([]); setShareMsg(""); scrollTo(plannerRef); }}>Start over</button>
+              </div>
+              {shareMsg && <div className="share-msg">{shareMsg}</div>}
             </div>
           </div>
         )}
 
-        {/* ═══ SCIENCE ═══ */}
+        {/* == SCIENCE == */}
         <div className="sec">
           <div className="sec-label">The science</div>
           <h2 className="sec-title">Why this works</h2>
-          <p className="sec-body">The cholesterol-lowering effect of oats is one of the most well-established findings in nutritional science. The US FDA approved a health claim for oat beta-glucan and reduced heart disease risk in 1997. The European Food Safety Authority followed in 2011. Food Standards Australia New Zealand approved a similar claim.</p>
+          <p className="sec-body">The cholesterol-lowering effect of oats is one of the most well-established findings in nutritional science. The US FDA approved a health claim for oat beta-glucan and reduced heart disease risk in 1997. The European Food Safety Authority backed the link in 2010, and the EU authorised the claim in 2011. Food Standards Australia New Zealand approved a similar claim.</p>
           <div className="ev-row">
             <div><div className="ev-num">58+</div><div className="ev-label">Clinical trials</div></div>
             <div><div className="ev-num">3,974</div><div className="ev-label">Participants</div></div>
@@ -541,10 +583,10 @@ export default function App() {
           <p className="sec-body">The 48-hour format is new. The science behind oats and cholesterol is not.</p>
         </div>
 
-        {/* ═══ IN THE PRESS ═══ */}
+        {/* == IN THE PRESS == */}
         <div className="sec">
-          <div className="sec-label">In the press</div>
-          <h2 className="sec-title">What they said</h2>
+          <div className="sec-label">The study in the news</div>
+          <h2 className="sec-title">What the coverage said</h2>
           <div style={{ marginTop: 8 }}>
             {PRESS.map((item, i) => (
               <div key={i} className="press-item">
@@ -560,7 +602,7 @@ export default function App() {
           </div>
         </div>
 
-        {/* ═══ FAQ ═══ */}
+        {/* == FAQ == */}
         <div className="sec">
           <div className="sec-label">FAQ</div>
           <h2 className="sec-title">Questions</h2>
@@ -571,13 +613,13 @@ export default function App() {
                   {item.q}
                   <span className={`faq-arrow ${faqOpen === i ? "open" : ""}`}>+</span>
                 </button>
-                {faqOpen === i && <div className="faq-a">{item.a}</div>}
+                <div className="faq-a" hidden={faqOpen !== i}>{item.a}</div>
               </div>
             ))}
           </div>
         </div>
 
-        {/* ═══ STUDIES ═══ */}
+        {/* == STUDIES == */}
         <div className="sec">
           <div className="sec-label">Further reading</div>
           <h2 className="sec-title">The studies</h2>
@@ -597,7 +639,7 @@ export default function App() {
         </div>
       </div>
 
-      {/* ═══ FOOTER ═══ */}
+      {/* == FOOTER == */}
       <div className="footer">
         <p>The 48-Hour Oat Reset is a free resource. No products, no sponsors.</p>
         <p style={{ opacity: 0.5 }}>This is not medical advice. Talk to your doctor before making dietary changes.</p>
